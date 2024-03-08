@@ -23,16 +23,23 @@ const App: React.FC = () => {
 
   const moveTodo = (listIndex: number, todoIndex: number, direction: 'previous' | 'next'): void => {
     const newLists: ListData[] = [...lists];
-    const listItem = newLists[listIndex];
-    const todo = newLists[listIndex].todos.splice(todoIndex, 1)[0];
+    const list = newLists[listIndex];
+    const todo = list.todos.splice(todoIndex, 1)[0];
+    let listItem = list;
     if (direction === 'next') {
-      newLists[listIndex + 1].todos.splice(todoIndex, 0, todo);
+      listItem = newLists[listIndex + 1]
+      listItem.todos.splice(todoIndex, 0, todo);
     } else if (direction === 'previous') {
-      newLists[listIndex - 1].todos.splice(todoIndex, 0, todo);
+      listItem = newLists[listIndex - 1]
+      listItem.todos.splice(todoIndex, 0, todo);
     }
     setLists(newLists);
-
-    axios.put(`http://localhost:3000/todos/${todo.id}`, {list_id: listItem.id});
+    
+    try {
+      axios.put(`http://localhost:3000/todos/${todo.id}`, { list_id: listItem.id });
+    } catch (error) {
+      console.error('Error updating todo:', error);
+    }
   };
 
   const addList = (): void => {
