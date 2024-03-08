@@ -1,5 +1,6 @@
 import React from 'react';
 import Todo from './Todo';
+import axios from 'axios';
 
 interface Todo {
   name: string;
@@ -20,9 +21,13 @@ interface ListProps {
 
 const List: React.FC<ListProps> = ({ list, index, lists, setLists, moveTodo }) => {
   const deleteList = (): void => {
-    const newLists = [...lists];
-    newLists.splice(index, 1);
-    setLists(newLists);
+    axios.delete(`http://localhost:3000/lists/${list.id}`)
+    .then(response => {
+      const newLists = [...lists];
+      newLists.splice(index, 1);
+      setLists(newLists);
+    })
+    .catch(error => "Error deleting a list", error);
   };
 
   return (

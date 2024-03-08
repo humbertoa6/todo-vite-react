@@ -1,16 +1,20 @@
 import React from 'react';
+import axios from 'axios';
 
 interface TodoProps {
   listIndex: number;
   lists: {
+    id: number;
     name: string;
     todos: {
+      id: number;
       name: string;
     }[];
   }[];
   setLists: React.Dispatch<React.SetStateAction<{
     name: string;
     todos: {
+      id: number;
       name: string;
     }[];
   }[]>>;
@@ -21,11 +25,21 @@ const Todo: React.FC<TodoProps> = ({ listIndex, lists, setLists, moveTodo }) => 
   const addTodo = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     const input = e.currentTarget.querySelector('input');
+    
     if (input && input.value.trim() !== '') {
-      const newLists = [...lists];
-      newLists[listIndex].todos.push({ name: input.value.trim() });
-      setLists(newLists);
-      input.value = '';
+      const todoName = input.value.trim();  
+      axios.post('http://localhost:3000/todos', {
+        name: todoName,
+        list_id: lists[listIndex].id
+      })
+      .then(
+        response => {
+          const newLists = [...lists];
+          newLists[listIndex].todos.push(response.data);
+          setLists(newLists);
+          input.value = '';   
+        }
+      ).catch(error => console.log("Error!", error))
     }
   };
 

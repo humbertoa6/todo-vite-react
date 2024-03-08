@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import List from './List';
 import './App.css';
+import axios from 'axios';
 
 interface Todo {
   name: string;
@@ -12,17 +13,17 @@ interface ListData {
 }
 
 const App: React.FC = () => {
-  const [lists, setLists] = useState<ListData[]>([
-    { name: 'List 1', todos: [] },
-    { name: 'List 2', todos: [] },
-    { name: 'List 3', todos: [] },
-    { name: 'List 4', todos: [] }
-  ]);
-
+  const [lists, setLists] = useState<ListData[]>([]);
   const [newListName, setNewListName] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/lists')
+    .then(response => setLists(response.data))
+  }, [])
 
   const moveTodo = (listIndex: number, todoIndex: number, direction: 'previous' | 'next'): void => {
     const newLists: ListData[] = [...lists];
+    const listItem = newLists[listIndex];
     const todo = newLists[listIndex].todos.splice(todoIndex, 1)[0];
     if (direction === 'next') {
       newLists[listIndex + 1].todos.splice(todoIndex, 0, todo);
@@ -30,13 +31,18 @@ const App: React.FC = () => {
       newLists[listIndex - 1].todos.splice(todoIndex, 0, todo);
     }
     setLists(newLists);
+
+    axios.put(`http://localhost:3000/todos/${todo.id}`, {list_id: listItem.id});
   };
 
   const addList = (): void => {
     if (newListName.trim() === '') return;
     const newList: ListData = { name: newListName, todos: [] };
-    setLists([...lists, newList]);
-    setNewListName('');
+    axios.post('http://localhost:3000/lists', newList)
+    .then(response => {
+      setLists([...lists, response.data]);
+      setNewListName('');
+    })
   };
 
   return (
